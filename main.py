@@ -6,9 +6,9 @@ from fastapi.responses import FileResponse
 app = FastAPI()
 
 
-@app.get("/")
+@app.get('/')
 def root():
-    return {"message": "Hello World"}
+    return 'it works!'
 
 
 @app.post('/api/render/')
