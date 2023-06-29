@@ -36,6 +36,7 @@ class ImgParams(TypedDict, total=False):
 
 class RequestParams(TypedDict, total=False):
     url: str = ''
+    browser: str = 'chromium'
     cookies: list[SetCookieParam]
     pdf: Optional[PDFParams] = None
     img: Optional[ImgParams] = None
