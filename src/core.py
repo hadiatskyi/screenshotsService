@@ -1,6 +1,20 @@
+import time
 from playwright.sync_api import sync_playwright
 
-from src.models import RequestParams
+from models import RequestParams
+
+
+def get_browser(playwright, screenshot_format: str = 'png'):
+    if screenshot_format == 'pdf':
+        return playwright.chromium.launch(
+            headless=True,
+            args=[
+                '--disable-blink-features=AutomationControlled',
+                '--exclude-switches=enable-automation',
+            ]
+        )
+    else:
+        return playwright.firefox.launch(headless=True)
 
 
 def get_goto_params(params: RequestParams) -> dict:
@@ -12,30 +26,33 @@ def get_goto_params(params: RequestParams) -> dict:
     return goto_params
 
 
-def get_screenshot(params: RequestParams):
+def get_screenshot(params: RequestParams, screenshot_format: str = 'png') -> tuple[str, str]:
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(
-            headless=True,
-            args=[
-                '--disable-blink-features=AutomationControlled',
-                '--exclude-switches=enable-automation',
-            ]
-        )
+        browser = get_browser(playwright, screenshot_format)
         context = browser.new_context()
         context.add_cookies(params.get('cookies'))
         page = context.new_page()
         page.goto(url=params.get('url'), wait_until='networkidle')
-
-        path = 'screenshot.{}'.format(params.get('output'))
-        title = page.title()
-        match params.get('output'):
-            case 'pdf':
-                result = page.pdf(path=path, **params.get('pdf'))
-            case 'png' | 'jpeg':
-                result = page.screenshot(path=path, **params.get('img').dict())
-            case _:
-                result = path = ''
+        page.wait()
+        time.sleep(10)
+        res = make_screenshot(page=page, params=params, screenshot_format=screenshot_format)
         # ---------------------
         context.close()
         browser.close()
-    return result, path, title
+    return res
+
+
+def make_screenshot(
+        page,
+        params: RequestParams,
+        screenshot_format: str = 'jpeg'
+) -> tuple[str, str]:
+    path = f'screenshot.{screenshot_format}'
+    title = page.title()
+    match screenshot_format:
+        case 'pdf':
+            page.emulate_media(media="screen")
+            page.pdf(path=path, **params.get('pdf'))
+        case 'png' | 'jpeg':
+            page.screenshot(path=path, type=screenshot_format, full_page=True)
+    return path, title
