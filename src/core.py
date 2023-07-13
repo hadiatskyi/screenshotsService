@@ -26,15 +26,16 @@ def get_goto_params(params: RequestParams) -> dict:
     return goto_params
 
 
-def get_screenshot(params: RequestParams, screenshot_format: str = 'png') -> tuple[str, str]:
+def get_screenshot(params: RequestParams, screenshot_format: str = 'jpeg') -> tuple[str, str]:
     with sync_playwright() as playwright:
         browser = get_browser(playwright, screenshot_format)
         context = browser.new_context()
         context.add_cookies(params.get('cookies'))
         page = context.new_page()
         page.goto(url=params.get('url'), wait_until='networkidle')
-        page.wait()
-        time.sleep(10)
+        page.wait_for_load_state('networkidle')
+        page.wait_for_load_state('load')
+        # time.sleep(20)
         res = make_screenshot(page=page, params=params, screenshot_format=screenshot_format)
         # ---------------------
         context.close()
@@ -45,14 +46,12 @@ def get_screenshot(params: RequestParams, screenshot_format: str = 'png') -> tup
 def make_screenshot(
         page,
         params: RequestParams,
-        screenshot_format: str = 'jpeg'
+        screenshot_format
 ) -> tuple[str, str]:
     path = f'screenshot.{screenshot_format}'
-    title = page.title()
     match screenshot_format:
         case 'pdf':
-            page.emulate_media(media="screen")
             page.pdf(path=path, **params.get('pdf'))
         case 'png' | 'jpeg':
             page.screenshot(path=path, type=screenshot_format, full_page=True)
-    return path, title
+    return path
