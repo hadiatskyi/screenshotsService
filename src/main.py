@@ -55,4 +55,3 @@ def render(
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=9000)
-{"timeout": 30000, "wait_until": "networkidle", "output": "pdf", "pdf": {"landscape": true,"scale": 0.5}, "cookies": [{"name": "sessionid", "value": "bszjm6g1h178on96mbtafn07vud64mbe", "domain": "millcorp.tst.graintrack.com", "path": "/"}, {"name": "csrftoken", "value": "lr8iLe59TgUTBSW74cO1V0FHeXWjTUlbYAX2QrNorB2FVwK9f8OPL8Swlw5Qeiit", "domain": "millcorp.tst.graintrack.com", "path": "/"}], "url": "https://millcorp.tst.graintrack.com/#/reports/invoice-risk-report?start_date=01.01.2022&end_date=31.12.2023&predicate=invoice_date&position_use_list=cargo&group_by=vessel_name&has_balance=1&currency_list=1&currency_list=3"}

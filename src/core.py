@@ -17,25 +17,19 @@ def get_browser(playwright, screenshot_format: str = 'png'):
         return playwright.firefox.launch(headless=True)
 
 
-def get_goto_params(params: RequestParams) -> dict:
-    goto_params = {'url': params.get('url'), }
-    if params.get('wait_until'):
-        goto_params['wait_until'] = params.get('wait_until')
-    if params.get('timeout'):
-        goto_params['timeout'] = params.get('timeout')
-    return goto_params
-
-
 def get_screenshot(params: RequestParams, screenshot_format: str = 'jpeg') -> tuple[str, str]:
     with sync_playwright() as playwright:
         browser = get_browser(playwright, screenshot_format)
         context = browser.new_context()
         context.add_cookies(params.get('cookies'))
         page = context.new_page()
-        page.goto(url=params.get('url'), wait_until='networkidle')
-        page.wait_for_load_state('networkidle')
-        page.wait_for_load_state('load')
-        # time.sleep(20)
+        page.set_default_timeout(90000)
+        page.goto(url=params.get('url'))
+        print(len(page.content()))
+        page.wait_for_load_state(state='networkidle')
+        print(len(page.content()))
+        page.locator('.overlay').wait_for(state='hidden')
+        print(len(page.content()))
         res = make_screenshot(page=page, params=params, screenshot_format=screenshot_format)
         # ---------------------
         context.close()
